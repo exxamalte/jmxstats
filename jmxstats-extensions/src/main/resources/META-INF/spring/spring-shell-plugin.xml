@@ -1,0 +1,40 @@
+<beans xmlns="http://www.springframework.org/schema/beans"
+       xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+       xmlns:context="http://www.springframework.org/schema/context"
+       xmlns:util="http://www.springframework.org/schema/util"
+       xsi:schemaLocation="http://www.springframework.org/schema/beans
+                           http://www.springframework.org/schema/beans/spring-beans.xsd
+                           http://www.springframework.org/schema/context
+                           http://www.springframework.org/schema/context/spring-context.xsd
+                           http://www.springframework.org/schema/util
+                           http://www.springframework.org/schema/util/spring-util.xsd">
+
+  <context:component-scan base-package="com.exxatools.monitoring.jmx"/>
+
+  <bean id="jmxStats" class="com.exxatools.monitoring.jmx.JmxStats">
+    <property name="converter" ref="delegatingConverter"/>
+  </bean>
+
+  <bean id="delegatingConverter" class="com.exxatools.monitoring.jmx.converters.DelegatingConverter">
+    <description>
+      This converter just delegates to all configured converters.
+    </description>
+    <property name="converters" ref="converters"/>
+  </bean>
+
+  <bean id="defaultConverter" class="com.exxatools.monitoring.jmx.converters.DefaultConverter"/>
+
+  <!--
+    A list of converters for values retrieved via JMX. The most specific one should be the first in the list, and
+    the most generic one the last one.
+  -->
+  <util:list id="converters">
+    <bean class="com.exxatools.monitoring.jmx.converters.GenericMapConverter">
+      <property name="keyConverter" ref="defaultConverter"/>
+      <property name="valueConverter" ref="delegatingConverter"/>
+    </bean>
+    <bean class="com.exxatools.monitoring.jmx.converters.CalendarConverter"/>
+    <ref bean="defaultConverter"/>
+  </util:list>
+
+</beans>
